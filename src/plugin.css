@@ -1,0 +1,81 @@
+/**
+ * css for videojs-setting-menu
+ * With the default plugins for postcss you can
+ * - @import files, they will be inlined during build
+ * - not worry about browser prefixes, they will be handled
+ * - nest selectors. This follows the css specification that is
+ *   currently out on some browsers. See https://tabatkins.github.io/specs/css-nesting/
+ * - custom properties (aka variables) via the var(--var-name) syntax. See
+ *   https://www.w3.org/TR/css-variables-1/
+ */
+
+
+/* Note: all vars must be defined here, there are no "local" vars */
+:root {
+  --main-color: red;
+  --base-font-size: 9;
+  --font-size: 7;
+}
+
+.video-js {
+
+  &.vjs-setting-menu {
+      & .vjs-setting-menu-button {
+        transition: transform 0.3s;
+        transform: rotate(0deg);
+      }
+
+      & .vjs-setting-button-anim {
+         transform: rotate(90deg);
+        }
+
+
+      & .vjs-setting-menu-main {
+        position: absolute;
+        bottom: 110%;
+        right: 0;
+        /*background-color: rgba(255, 255, 255, .66);*/
+        background: rgba(43, 51, 63, 0.7);
+
+        & .vjs-setting-item {
+            padding: 3px;
+            display: flex;
+            cursor: pointer;
+            text-transform: capitalize;
+
+            & span {
+              margin: 3px 6px;
+              width: 50%;
+              display: block;
+            }
+
+            & .text-right {
+              text-align: right;
+            }
+
+            & .text-left {
+              text-align: left;
+            }
+
+          }
+
+        & .vjs-setting-icon {
+            text-align: right;
+          }
+      }
+  }
+
+
+    /*&.vjs-setting-item {*/
+       /*text-transform: capitalize;*/
+     /*}*/
+  /*color: #555555;*/
+  /*color: #f2f2f2;*/
+  /*color: #4a5764;*/
+  /*font-size: 14px;*/
+    /*font-size: 1.3em;*/
+    /*font-weight: 500;*/
+    /*border-radius: 5px;*/
+    /*transition: width 0.5s;*/
+  /*}*/
+}
