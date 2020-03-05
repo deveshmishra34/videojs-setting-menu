@@ -1,11 +1,12 @@
 import videojs from 'video.js';
 import {version as VERSION} from "../../package";
 import {
+  CHANGE_ASPECT_RATIO,
   CHANGE_PLAYBACK_RATE,
   CHANGE_PLAYER_QUALITY,
   GO_TO_MAIN_MENU,
   TOGGLE_MAIN_MENU,
-  TOGGLE_QUALITY_MENU,
+  TOGGLE_QUALITY_MENU, TOGGLE_RATIO_MENU,
   TOGGLE_SPEED_MENU
 } from '../event';
 import SettingMenuItem from './SettingMenuItem';
@@ -16,6 +17,7 @@ const Component = videojs.getComponent('Component');
 const defaults = {
   menu: ['speed', 'quality'],
   speed: [],
+  ration: ['16:9', '4:3'],
   sources: [],
   defaultQuality: 'default',
 };
@@ -26,11 +28,12 @@ class SettingMenuMain extends Component {
     super(player, options);
 
     this.options = videojs.mergeOptions(defaults, options);
-
-    console.log('options: ', this.options, this.options_);
+    // console.log('options: ', this.options, this.options_);
     // when player is ready setup basic option
+    this.el()['classList'].add('vjs-hidden');
     player.on('ready', () => {
       this.getSpeedList();
+      this.getRatioList();
       this.getQualityList();
       this.update();
     });
@@ -38,9 +41,15 @@ class SettingMenuMain extends Component {
     // in case url type is not mp4 quality will be return after loadedmetadata event
     player.on('loadedmetadata', () => {
       if (!this.options_['sources'] || !this.options_['sources'].length) {
+        this.getSpeedList();
+        this.getRatioList();
         this.getQualityList();
         this.update();
       }
+
+      // setTimeout( () => {
+      //   console.log('player', player.aspectRatio('4:3'));
+      // }, 5000)
     });
 
     player.on('userinactive', () => {
@@ -55,16 +64,19 @@ class SettingMenuMain extends Component {
 
     // Hide/Show Speed Menu
     player.on(TOGGLE_MAIN_MENU, () => {
+      const eleMain = document.getElementsByClassName('vjs-setting-menu-main')[0]; //.add('vjs-hidden');
       const eleDiv = document.getElementsByClassName('vjs-settings-menu-home')[0]; //.add('vjs-hidden');
       const eleSpeed = document.getElementsByClassName('vjs-settings-menu-speed')[0]; //.add('vjs-hidden');
       const eleQuality = document.getElementsByClassName('vjs-settings-menu-quality')[0]; //.add('vjs-hidden');
       // document.getElementsByClassName('vjs-settings-menu-home')[0].classList.add('vjs-hidden');
       // document.getElementsByClassName('vjs-settings-menu-speed')[0].classList.remove('vjs-hidden');
       if (eleDiv.classList.contains('vjs-hidden')) {
+        eleMain.classList.remove('vjs-hidden');
         eleDiv.classList.remove('vjs-hidden');
         eleSpeed.classList.add('vjs-hidden');
         eleQuality.classList.add('vjs-hidden');
       } else {
+        eleMain.classList.add('vjs-hidden');
         eleDiv.classList.add('vjs-hidden');
         eleSpeed.classList.add('vjs-hidden');
         eleQuality.classList.add('vjs-hidden');
@@ -75,6 +87,11 @@ class SettingMenuMain extends Component {
     player.on(TOGGLE_SPEED_MENU, () => {
       document.getElementsByClassName('vjs-settings-menu-home')[0].classList.add('vjs-hidden');
       document.getElementsByClassName('vjs-settings-menu-speed')[0].classList.remove('vjs-hidden');
+    });
+
+    player.on(TOGGLE_RATIO_MENU, () => {
+      document.getElementsByClassName('vjs-settings-menu-home')[0].classList.add('vjs-hidden');
+      document.getElementsByClassName('vjs-settings-menu-ratio')[0].classList.remove('vjs-hidden');
     });
 
     // Hide/Show Quality Menu
@@ -88,11 +105,18 @@ class SettingMenuMain extends Component {
       document.getElementsByClassName('vjs-settings-menu-home')[0].classList.remove('vjs-hidden');
       document.getElementsByClassName('vjs-settings-menu-speed')[0].classList.add('vjs-hidden');
       document.getElementsByClassName('vjs-settings-menu-quality')[0].classList.add('vjs-hidden');
+      document.getElementsByClassName('vjs-settings-menu-ratio')[0].classList.add('vjs-hidden');
     });
 
     // on playbackRate change
     player.on(CHANGE_PLAYBACK_RATE, (data, item) => {
       this.player().playbackRate(item ? item : 1);
+    });
+
+    // on playbackRate change
+    player.on(CHANGE_ASPECT_RATIO, (data, item) => {
+      console.log(CHANGE_ASPECT_RATIO, item);
+      this.player().aspectRatio(item ? item : '16:9');
     });
 
     // on player quality change
@@ -116,7 +140,7 @@ class SettingMenuMain extends Component {
     const el = videojs.dom.createEl('div', {
       className: 'vjs-setting-menu-main'
     });
-
+    // el.classList.addClass('vjs-hidden');
     return el;
   }
 
@@ -150,6 +174,10 @@ class SettingMenuMain extends Component {
         options: this.getHomeMenu()
       },
       {
+        name: 'ratio',
+        options: this.getRatioMenu()
+      },
+      {
         name: 'speed',
         options: this.getSpeedMenu()
       },
@@ -175,6 +203,11 @@ class SettingMenuMain extends Component {
     this.options_['currentPlaybackSpeed'] = playBackRate;
   }
 
+  getRatioList() {
+    this.options_['ration'] = ['16:9', '4:3'];
+    this.options_['currentRation'] = '16:9';
+  }
+
   getQualityList() {
     let currentSources = this.player().currentSource();
     // const tech = this.player_.tech();
@@ -184,11 +217,12 @@ class SettingMenuMain extends Component {
       // console.log(representations);
       this.options_['sources'] = representations.map(el => {
         return {
-          src: (el) ? el.id.substr(2, el.id.length - 1) : currentSources.src,
+          src: (el.id && (el.id.split(':')[0].length === 5 || el.id.split(':')[0].length === 4)) ? el.id : el.id.substr(2, el.id.length - 1), //: currentSources.src
           label: el.height.toString() || '240',
           type: 'application/x-mpegURL'
         };
       });
+      // console.log(this.options_['sources']);
     } else if (currentSources && currentSources.type === 'video/mp4') {
       const sources = [];
       this.player().currentSources().forEach(el => {
@@ -196,7 +230,7 @@ class SettingMenuMain extends Component {
           sources.push({
             src: el.src,
             label: el.label,
-            type: el.label
+            type: el.type
           })
         }
       });
@@ -230,7 +264,7 @@ class SettingMenuMain extends Component {
 
   getQualityMenu() {
     const currentSource = this.player().currentSource();
-    const sources = this.options_['sources'];
+    const sources = this.options_['sources'] || [];
 
     // console.log('sources: ', sources, 'currentSrc: ', currentSource, this.options_, this.player_.getCache());
     const speedOptions = sources.map(el => {
@@ -289,8 +323,39 @@ class SettingMenuMain extends Component {
     return speedOptions;
   }
 
+  getRatioMenu() {
+    const aspectRation = this.options_['ration'];
+    const currentAspectRation = this.options_['currentRation'];
+
+    if (!aspectRation || !currentAspectRation) {
+      return;
+    }
+
+    const ratioOptions = aspectRation.map(el => {
+      return {
+        name: el,
+        value: el,
+        isSelected: el === currentAspectRation,
+        className: (el === currentAspectRation) ? 'vjs-icon-circle-inner-circle' : 'vjs-icon-circle-outline',
+        event: CHANGE_ASPECT_RATIO,
+        innerHTML: `<span class="vjs-setting-title">${el === 1 ? 'Normal' : el + 'x'}</span>
+<span class="vjs-setting-icon vjs-ratio ${(el === currentAspectRation) ? 'vjs-icon-circle-inner-circle' : 'vjs-icon-circle-outline'}"></span>`
+      };
+    });
+    ratioOptions.splice(0, 0, {
+      name: 'Ratio',
+      value: 'Ratio',
+      isSelected: false,
+      className: 'vjs-icon-play',
+      event: GO_TO_MAIN_MENU,
+      innerHTML: `<span style="transform: rotate(180deg);" class="vjs-setting-icon vjs-icon-play"></span>
+                    <span class="vjs-setting-title">Ratio</span>`
+    });
+
+    return ratioOptions;
+  }
+
   getHomeMenu() {
-    console.log('optionsL ', this.options);
     if (!this.options['menu'] || !this.options['menu'].length) {
       return;
     }
@@ -327,6 +392,17 @@ class SettingMenuMain extends Component {
         event: TOGGLE_SPEED_MENU,
         innerHTML: `<span class="vjs-setting-title text-left">Related</span>
 <span class="vjs-setting-icon vjs-icon-chapters"></span>`
+      })
+    }
+
+    if (requiredMenu.indexOf('aspect-ration') > -1) {
+      menu.push({
+        name: 'Ration',
+        class: '',
+        value: '16:9',
+        event: TOGGLE_RATIO_MENU,
+        innerHTML: `<span class="vjs-setting-title text-left">Ratio</span>
+<span class="vjs-setting-icon vjs-setting-ratio">16:9</span>`
       })
     }
 

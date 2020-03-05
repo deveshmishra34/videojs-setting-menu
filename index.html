@@ -8,20 +8,58 @@
 </head>
 <body>
   <video id="videojs-setting-menu-player" class="video-js vjs-default-skin" controls>
-    <source src="//vjs.zencdn.net/v/oceans.mp4" type='video/mp4'>
-    <source src="//vjs.zencdn.net/v/oceans.webm" type='video/webm'>
   </video>
   <ul>
     <li><a href="/test/debug.html">Run unit tests in browser.</a></li>
     
   </ul>
   <script src="node_modules/video.js/dist/video.js"></script>
+  <script src="node_modules/@videojs/http-streaming/dist/videojs-http-streaming.min.js"></script>
   <script src="dist/videojs-setting-menu.js"></script>
   <script>
     (function(window, videojs) {
       var examplePlayer = window.examplePlayer = videojs('videojs-setting-menu-player', {
-        playbackRates: [0.5, 1, 1.25, 1.5, 2]
+        playbackRates: [0.5, 1, 1.25, 1.5, 2],
+        controlBar: {
+          children: {
+            playToggle: {},
+            currentTimeDisplay: {},
+            progressControl: {},
+            durationDisplay: {},
+            liveDisplay: {},
+            // settingButton: {},
+            // settingMenuMain: {},
+            fullscreenToggle: {}
+          }
+        }
       });
+
+      // sources = [
+      //   {
+      //     src: 'https://player.vimeo.com/external/388011956.sd.mp4?s=5eecbb23995a7eff553f49843e3dc131d2074212&profile_id=165&oauth2_token_id=1289522162',
+      //     type: 'video/mp4',
+      //     label: '540'
+      //   },
+      //   {
+      //     src: 'https://player.vimeo.com/external/388011956.sd.mp4?s=5eecbb23995a7eff553f49843e3dc131d2074212&profile_id=139&oauth2_token_id=1289522162',
+      //     type: 'video/mp4',
+      //     label: '240'
+      //   },
+      //   {
+      //     src: 'https://player.vimeo.com/external/388011956.sd.mp4?s=5eecbb23995a7eff553f49843e3dc131d2074212&profile_id=164&oauth2_token_id=1289522162',
+      //     type: 'video/mp4',
+      //     label: '360'
+      //   }
+      // ];
+
+      sources = [
+        {
+          src: 'https://player.vimeo.com/external/388011956.m3u8?s=a0111243ef5ba67050c4dd4c9faee216593978a9&oauth2_token_id=1289522162',
+          type: 'application/x-mpegURL',
+          withCredentials: false
+        }
+      ];
+      examplePlayer.src(sources);
       var settingMenu = window.settingMenu = examplePlayer.settingMenu({
         menu: ['speed', 'quality'], //speed, quality
 
