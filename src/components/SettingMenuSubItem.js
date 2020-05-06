@@ -54,27 +54,28 @@ class SettingMenuSubItem extends ClickableComponent {
     document.getElementsByClassName('vjs-speed vjs-icon-circle-inner-circle')[0].classList.remove('vjs-icon-circle-inner-circle');
     if (data.target && data.target.children.length > 1) {
       data.target.children[1].classList.add('vjs-icon-circle-inner-circle');
-      data.target.children[1].classList.add('vjs-icon-circle-outline');
+      data.target.children[1].classList.remove('vjs-icon-circle-outline');
     } else {
       data.currentTarget.children[1].classList.add('vjs-icon-circle-inner-circle');
-      data.currentTarget.children[1].classList.add('vjs-icon-circle-outline');
+      data.currentTarget.children[1].classList.remove('vjs-icon-circle-outline');
     }
 
   }
 
   qualityDomMod(data, value) {
     // update outer value
-    document.getElementsByClassName('vjs-setting-quality')[0].innerHTML = value.label + 'p';
+    document.getElementsByClassName('vjs-setting-quality')[0].innerHTML = value.label === 'Auto' ? 'Auto': value.label + 'p';
 
     // update radio button
     document.getElementsByClassName('vjs-quality vjs-icon-circle-inner-circle')[0].classList.add('vjs-icon-circle-outline');
     document.getElementsByClassName('vjs-quality vjs-icon-circle-inner-circle')[0].classList.remove('vjs-icon-circle-inner-circle');
+
     if (data.target && data.target.children.length > 1) {
       data.target.children[1].classList.add('vjs-icon-circle-inner-circle');
-      data.target.children[1].classList.add('vjs-icon-circle-outline');
+      data.target.children[1].classList.remove('vjs-icon-circle-outline');
     } else {
       data.currentTarget.children[1].classList.add('vjs-icon-circle-inner-circle');
-      data.currentTarget.children[1].classList.add('vjs-icon-circle-outline');
+      data.currentTarget.children[1].classList.remove('vjs-icon-circle-outline');
     }
   }
 
@@ -87,10 +88,10 @@ class SettingMenuSubItem extends ClickableComponent {
     document.getElementsByClassName('vjs-ratio vjs-icon-circle-inner-circle')[0].classList.remove('vjs-icon-circle-inner-circle');
     if (data.target && data.target.children.length > 1) {
       data.target.children[1].classList.add('vjs-icon-circle-inner-circle');
-      data.target.children[1].classList.add('vjs-icon-circle-outline');
+      data.target.children[1].classList.remove('vjs-icon-circle-outline');
     } else {
       data.currentTarget.children[1].classList.add('vjs-icon-circle-inner-circle');
-      data.currentTarget.children[1].classList.add('vjs-icon-circle-outline');
+      data.currentTarget.children[1].classList.remove('vjs-icon-circle-outline');
     }
   }
 

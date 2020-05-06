@@ -10,6 +10,7 @@ import {
   TOGGLE_SPEED_MENU
 } from '../event';
 import SettingMenuItem from './SettingMenuItem';
+
 const Menu = videojs.getComponent('Menu');
 const Component = videojs.getComponent('Component');
 
@@ -17,7 +18,7 @@ const Component = videojs.getComponent('Component');
 const defaults = {
   menu: ['speed', 'quality'],
   speed: [],
-  ration: ['16:9', '4:3'],
+  aspectRatio: ['16:9', '4:3'],
   sources: [],
   defaultQuality: 'default',
 };
@@ -32,20 +33,21 @@ class SettingMenuMain extends Component {
     // when player is ready setup basic option
     this.el()['classList'].add('vjs-hidden');
     player.on('ready', () => {
+      console.log('ready');
       this.getSpeedList();
       this.getRatioList();
       this.getQualityList();
-      this.update();
     });
 
     // in case url type is not mp4 quality will be return after loadedmetadata event
     player.on('loadedmetadata', () => {
-      if (!this.options_['sources'] || !this.options_['sources'].length) {
-        this.getSpeedList();
-        this.getRatioList();
-        this.getQualityList();
-        this.update();
-      }
+      console.log('loadedmetadata');
+      // console.log('cache: ', this.player.getCache());
+      // if (!this.options_['sources'] || !this.options_['sources'].length) {
+      this.getSpeedList();
+      this.getRatioList();
+      this.getQualityList();
+      // }
 
       // setTimeout( () => {
       //   console.log('player', player.aspectRatio('4:3'));
@@ -53,59 +55,73 @@ class SettingMenuMain extends Component {
     });
 
     player.on('userinactive', () => {
-      const eleDiv = document.getElementsByClassName('vjs-settings-menu-home')[0]; //.add('vjs-hidden');
-      const eleSpeed = document.getElementsByClassName('vjs-settings-menu-speed')[0]; //.add('vjs-hidden');
-      const eleQuality = document.getElementsByClassName('vjs-settings-menu-quality')[0]; //.add('vjs-hidden');
+      const eleMain = document.getElementsByClassName('vjs-setting-menu-main'); //.add('vjs-hidden');
+      const eleDiv = document.getElementsByClassName('vjs-settings-menu-home'); //.add('vjs-hidden');
+      const eleSpeed = document.getElementsByClassName('vjs-settings-menu-speed'); //.add('vjs-hidden');
+      const eleQuality = document.getElementsByClassName('vjs-settings-menu-quality'); //.add('vjs-hidden');
 
-      eleDiv.classList.add('vjs-hidden');
-      eleSpeed.classList.add('vjs-hidden');
-      eleQuality.classList.add('vjs-hidden');
+      this.eleClassAction(eleMain, 'vjs-hidden');
+      this.eleClassAction(eleDiv, 'vjs-hidden');
+      this.eleClassAction(eleSpeed, 'vjs-hidden');
+      this.eleClassAction(eleQuality, 'vjs-hidden');
     });
 
     // Hide/Show Speed Menu
     player.on(TOGGLE_MAIN_MENU, () => {
-      const eleMain = document.getElementsByClassName('vjs-setting-menu-main')[0]; //.add('vjs-hidden');
-      const eleDiv = document.getElementsByClassName('vjs-settings-menu-home')[0]; //.add('vjs-hidden');
-      const eleSpeed = document.getElementsByClassName('vjs-settings-menu-speed')[0]; //.add('vjs-hidden');
-      const eleQuality = document.getElementsByClassName('vjs-settings-menu-quality')[0]; //.add('vjs-hidden');
+      const eleMain = document.getElementsByClassName('vjs-setting-menu-main'); //.add('vjs-hidden');
+      const eleDiv = document.getElementsByClassName('vjs-settings-menu-home'); //.add('vjs-hidden');
+      const eleSpeed = document.getElementsByClassName('vjs-settings-menu-speed'); //.add('vjs-hidden');
+      const eleQuality = document.getElementsByClassName('vjs-settings-menu-quality'); //.add('vjs-hidden');
       // document.getElementsByClassName('vjs-settings-menu-home')[0].classList.add('vjs-hidden');
       // document.getElementsByClassName('vjs-settings-menu-speed')[0].classList.remove('vjs-hidden');
-      if (eleDiv.classList.contains('vjs-hidden')) {
-        eleMain.classList.remove('vjs-hidden');
-        eleDiv.classList.remove('vjs-hidden');
-        eleSpeed.classList.add('vjs-hidden');
-        eleQuality.classList.add('vjs-hidden');
+      if (eleDiv && eleDiv[0] && eleDiv[0].classList.contains('vjs-hidden')) {
+        this.eleClassAction(eleMain, 'vjs-hidden', 'remove');
+        this.eleClassAction(eleDiv, 'vjs-hidden', 'remove');
+        this.eleClassAction(eleSpeed, 'vjs-hidden');
+        this.eleClassAction(eleQuality, 'vjs-hidden');
       } else {
-        eleMain.classList.add('vjs-hidden');
-        eleDiv.classList.add('vjs-hidden');
-        eleSpeed.classList.add('vjs-hidden');
-        eleQuality.classList.add('vjs-hidden');
+        this.eleClassAction(eleMain, 'vjs-hidden');
+        this.eleClassAction(eleDiv, 'vjs-hidden');
+        this.eleClassAction(eleSpeed, 'vjs-hidden');
+        this.eleClassAction(eleQuality, 'vjs-hidden');
       }
 
     });
 
     player.on(TOGGLE_SPEED_MENU, () => {
-      document.getElementsByClassName('vjs-settings-menu-home')[0].classList.add('vjs-hidden');
-      document.getElementsByClassName('vjs-settings-menu-speed')[0].classList.remove('vjs-hidden');
+      // document.getElementsByClassName('vjs-settings-menu-home')[0].classList.add('vjs-hidden');
+      // document.getElementsByClassName('vjs-settings-menu-speed')[0].classList.remove('vjs-hidden');
+      this.eleClassAction(document.getElementsByClassName('vjs-settings-menu-home'), 'vjs-hidden');
+      this.eleClassAction(document.getElementsByClassName('vjs-settings-menu-speed'), 'vjs-hidden', 'remove');
     });
 
     player.on(TOGGLE_RATIO_MENU, () => {
-      document.getElementsByClassName('vjs-settings-menu-home')[0].classList.add('vjs-hidden');
-      document.getElementsByClassName('vjs-settings-menu-ratio')[0].classList.remove('vjs-hidden');
+      // document.getElementsByClassName('vjs-settings-menu-home')[0].classList.add('vjs-hidden');
+      // document.getElementsByClassName('vjs-settings-menu-ratio')[0].classList.remove('vjs-hidden');
+      this.eleClassAction(document.getElementsByClassName('vjs-settings-menu-home'), 'vjs-hidden');
+      this.eleClassAction(document.getElementsByClassName('vjs-settings-menu-ratio'), 'vjs-hidden', 'remove');
     });
 
     // Hide/Show Quality Menu
     player.on(TOGGLE_QUALITY_MENU, () => {
-      document.getElementsByClassName('vjs-settings-menu-home')[0].classList.add('vjs-hidden');
-      document.getElementsByClassName('vjs-settings-menu-quality')[0].classList.remove('vjs-hidden');
+      // document.getElementsByClassName('vjs-settings-menu-home')[0].classList.add('vjs-hidden');
+      // document.getElementsByClassName('vjs-settings-menu-quality')[0].classList.remove('vjs-hidden');
+
+      this.eleClassAction(document.getElementsByClassName('vjs-settings-menu-home'), 'vjs-hidden');
+      this.eleClassAction(document.getElementsByClassName('vjs-settings-menu-quality'), 'vjs-hidden', 'remove');
     });
 
     // Go back to main menu, hide everything accept main menu
     player.on(GO_TO_MAIN_MENU, () => {
-      document.getElementsByClassName('vjs-settings-menu-home')[0].classList.remove('vjs-hidden');
-      document.getElementsByClassName('vjs-settings-menu-speed')[0].classList.add('vjs-hidden');
-      document.getElementsByClassName('vjs-settings-menu-quality')[0].classList.add('vjs-hidden');
-      document.getElementsByClassName('vjs-settings-menu-ratio')[0].classList.add('vjs-hidden');
+    //   document.getElementsByClassName('vjs-settings-menu-home')[0].classList.remove('vjs-hidden');
+    //   document.getElementsByClassName('vjs-settings-menu-speed')[0].classList.add('vjs-hidden');
+    //   document.getElementsByClassName('vjs-settings-menu-quality')[0].classList.add('vjs-hidden');
+    //   document.getElementsByClassName('vjs-settings-menu-ratio')[0].classList.add('vjs-hidden');
+
+      this.eleClassAction(document.getElementsByClassName('vjs-settings-menu-home'), 'vjs-hidden', 'remove');
+      this.eleClassAction(document.getElementsByClassName('vjs-settings-menu-speed'), 'vjs-hidden');
+      this.eleClassAction(document.getElementsByClassName('vjs-settings-menu-quality'), 'vjs-hidden');
+      this.eleClassAction(document.getElementsByClassName('vjs-settings-menu-ratio'), 'vjs-hidden');
     });
 
     // on playbackRate change
@@ -115,25 +131,47 @@ class SettingMenuMain extends Component {
 
     // on playbackRate change
     player.on(CHANGE_ASPECT_RATIO, (data, item) => {
-      console.log(CHANGE_ASPECT_RATIO, item);
+      // console.log(CHANGE_ASPECT_RATIO, item);
       this.player().aspectRatio(item ? item : '16:9');
     });
 
     // on player quality change
     player.on(CHANGE_PLAYER_QUALITY, (data, item) => {
-      const isPaused = this.player().paused();
-      const currentTime = this.player().currentTime();
-      this.player().src(item);
-      // this.player_.play();
-
-      this.player().ready(() => {
-        // console.log('Player is ready toh play');
-        if (!isPaused) {
-          this.player().play();
+      const tech = this.player().tech().hls;
+      if (item && (item.type === 'application/x-mpegURL' || item.type === 'application/dash+xml') && tech) {
+        const masterDetails = tech.playlists.master;
+        const representations = masterDetails.playlists;
+        const playLists = representations.filter( (playlistInfo) => {
+          if (playlistInfo && playlistInfo.resolvedUri === item.src) {
+            return playlistInfo;
+          }
+        });
+        if (playLists.length) {
+          tech.playlists.media(playLists[0]);
+          tech.selectPlaylist = function () {
+            return playLists[0];
+          }
         }
-        this.player().currentTime(currentTime);
-      });
+      } else {
+        const isPaused = this.player().paused();
+        const currentTime = this.player().currentTime();
+        this.player().src(item);
+        this.player().ready(() => {
+          if (!isPaused) {
+            this.player().play();
+          }
+          this.player().currentTime(currentTime);
+        });
+      }
     });
+  }
+
+  eleClassAction(ele, className, action = 'add') {
+    if (ele && ele[0] && ele[0].classList && className && action === 'add') {
+      ele[0].classList.add(className);
+    } else if (ele && ele[0] && ele[0].classList && className && action === 'remove') {
+      ele[0].classList.remove(className);
+    }
   }
 
   createEl() {
@@ -148,6 +186,7 @@ class SettingMenuMain extends Component {
    * Update the menu based on the current state of its items.
    */
   update() {
+    console.log('update');
     const menu = this.createMenu();
 
     if (this['menu']) {
@@ -174,12 +213,12 @@ class SettingMenuMain extends Component {
         options: this.getHomeMenu()
       },
       {
-        name: 'ratio',
-        options: this.getRatioMenu()
-      },
-      {
         name: 'speed',
         options: this.getSpeedMenu()
+      },
+      {
+        name: 'ratio',
+        options: this.getRatioMenu()
       },
       {
         name: 'quality',
@@ -204,28 +243,51 @@ class SettingMenuMain extends Component {
   }
 
   getRatioList() {
-    this.options_['ration'] = ['16:9', '4:3'];
-    this.options_['currentRation'] = '16:9';
+    this.options_['aspectRatio'] = ['16:9', '4:3'];
+    this.options_['currentRatio'] = '16:9';
   }
 
   getQualityList() {
-    let currentSources = this.player().currentSource();
-    // const tech = this.player_.tech();
-    // console.log(tech['hls']);
-    if (currentSources && currentSources.type === 'application/x-mpegURL' && this.player()['hls']) {
-      const representations = this.player()['hls'].representations();
-      // console.log(representations);
-      this.options_['sources'] = representations.map(el => {
-        return {
-          src: (el.id && (el.id.split(':')[0].length === 5 || el.id.split(':')[0].length === 4)) ? el.id : el.id.substr(2, el.id.length - 1), //: currentSources.src
-          label: el.height.toString() || '240',
-          type: 'application/x-mpegURL'
-        };
+    let currentSource = this.player().currentSource();
+    const tech = this.player().tech().hls;
+    if (currentSource && (currentSource.type === 'application/x-mpegURL' || currentSource.type === 'application/dash+xml') && tech) {
+      const masterDetails = tech.playlists.master;
+      const representations = masterDetails.playlists;
+      if (this.options_['sources'] && (currentSource.src === representations[0].resolvedUri || representations[0].resolvedUri.includes(currentSource.src))) {
+        return;
+      }
+
+      const sources = {};
+      representations.forEach( (el) => {
+        const height = el.attributes && el.attributes.RESOLUTION && el.attributes.RESOLUTION.height ? el.attributes.RESOLUTION.height.toString() : '240';
+        if (!sources.hasOwnProperty(height)) {
+          sources[height] = {
+            src: (el.resolvedUri && (el.resolvedUri.split(':')[0].length === 5 || el.id.split(':')[0].length === 4)) ? el.resolvedUri : el.resolvedUri.substr(2, el.resolvedUri.length - 1), //: currentSources.src
+            label: el.attributes && el.attributes.RESOLUTION && el.attributes.RESOLUTION.height ? el.attributes.RESOLUTION.height.toString() : '240',
+            type: currentSource.type
+          }
+        }
       });
+      this.options_['sources'] = Object.values(sources);
+
+      this.options_['sources'].push({
+        src: currentSource.src,
+        label: 'Auto',
+        type: currentSource.type
+      });
+
+      this.options_['defaultQuality'] = 'Auto';
       // console.log(this.options_['sources']);
-    } else if (currentSources && currentSources.type === 'video/mp4') {
+    } else if (currentSource && currentSource.type === 'video/mp4') {
+      // console.log('here');
+      const currentSources = this.player().currentSources();
       const sources = [];
-      this.player().currentSources().forEach(el => {
+      const filterSources = this.options_['sources'] ? this.options_['sources'].filter( (el) => el.src === currentSources[0].src) : [];
+      if (this.options_['sources'] && currentSource.src === currentSources[0].src && filterSources.length &&filterSources[0].src === currentSource.src) {
+        return;
+      }
+
+      currentSources.forEach(el => {
         if (el && el.label) {
           sources.push({
             src: el.src,
@@ -236,6 +298,7 @@ class SettingMenuMain extends Component {
       });
       // console.log('sources: ', sources, this.player().currentSources());
       this.options_['sources'] = sources;
+      this.options_['defaultQuality'] = currentSource.label ? currentSource.label + 'p' : 'Auto';
     }
 
     if (this.options_['sources'] && this.options_['sources'].length) {
@@ -243,10 +306,12 @@ class SettingMenuMain extends Component {
         return parseInt(b.label, 10) - parseInt(a.label, 10);
       });
 
-      currentSources = (currentSources && currentSources.type === 'video/mp4') ? currentSources : this.options_['sources'][this.options_['sources'].length - 1];
-      const defaultQuality = this.options_['defaultQuality']? this.options_['defaultQuality'].toString() : 'default';
-      this.playDefaultQuality(this.options_['sources'], currentSources, defaultQuality);
+      // currentSources = (currentSources && currentSources.type === 'video/mp4') ? currentSources : this.options_['sources'][this.options_['sources'].length - 1];
+      // const defaultQuality = this.options_['defaultQuality']? this.options_['defaultQuality'].toString() : 'default';
+      // this.playDefaultQuality(this.options_['sources'], currentSources, defaultQuality);
     }
+
+    this.update();
   }
 
   playDefaultQuality(sources, currentSources, quality) {
@@ -269,15 +334,16 @@ class SettingMenuMain extends Component {
     // console.log('sources: ', sources, 'currentSrc: ', currentSource, this.options_, this.player_.getCache());
     const speedOptions = sources.map(el => {
       return {
-        name: el.label + 'p',
+        name: (el.label === 'Auto') ? 'Auto' : el.label + 'p',
         value: el,
-        isSelected: el.label === currentSource['src'],
-        className: (el.label === currentSource['label']) ? 'vjs-icon-circle-inner-circle' : 'vjs-icon-circle-outline',
+        isSelected: (el.label === currentSource['src'] || el.label === 'Auto'),
+        className: (el.label === currentSource['label'] || el.label === 'Auto') ? 'vjs-icon-circle-inner-circle' : 'vjs-icon-circle-outline',
         event: CHANGE_PLAYER_QUALITY,
-        innerHTML: `<span class="vjs-setting-title">${el.label + 'p'}</span>
-<span class="vjs-setting-icon vjs-quality ${(el.label === currentSource['label']) ? 'vjs-icon-circle-inner-circle' : 'vjs-icon-circle-outline'}"></span>`
+        innerHTML: `<span class="vjs-setting-title">${(el.label === 'Auto') ? 'Auto' : el.label + 'p'}</span>
+<span class="vjs-setting-icon vjs-quality ${(el.label === currentSource['label'] || el.label === 'Auto') ? 'vjs-icon-circle-inner-circle' : 'vjs-icon-circle-outline'}"></span>`
       };
     });
+
     speedOptions.splice(0, 0, {
       name: 'Quality',
       value: 'Quality',
@@ -324,22 +390,22 @@ class SettingMenuMain extends Component {
   }
 
   getRatioMenu() {
-    const aspectRation = this.options_['ration'];
-    const currentAspectRation = this.options_['currentRation'];
+    const aspectRatio = this.options_['aspectRatio'];
+    const currentAspectRatio = this.options_['currentRatio'];
 
-    if (!aspectRation || !currentAspectRation) {
+    if (!aspectRatio || !currentAspectRatio) {
       return;
     }
 
-    const ratioOptions = aspectRation.map(el => {
+    const ratioOptions = aspectRatio.map(el => {
       return {
         name: el,
         value: el,
-        isSelected: el === currentAspectRation,
-        className: (el === currentAspectRation) ? 'vjs-icon-circle-inner-circle' : 'vjs-icon-circle-outline',
+        isSelected: el === currentAspectRatio,
+        className: (el === currentAspectRatio) ? 'vjs-icon-circle-inner-circle' : 'vjs-icon-circle-outline',
         event: CHANGE_ASPECT_RATIO,
         innerHTML: `<span class="vjs-setting-title">${el === 1 ? 'Normal' : el + 'x'}</span>
-<span class="vjs-setting-icon vjs-ratio ${(el === currentAspectRation) ? 'vjs-icon-circle-inner-circle' : 'vjs-icon-circle-outline'}"></span>`
+<span class="vjs-setting-icon vjs-ratio ${(el === currentAspectRatio) ? 'vjs-icon-circle-inner-circle' : 'vjs-icon-circle-outline'}"></span>`
       };
     });
     ratioOptions.splice(0, 0, {
@@ -364,7 +430,7 @@ class SettingMenuMain extends Component {
     const requiredMenu = this.options['menu'].map(el => el.toString().toLowerCase());
 
     if (requiredMenu.indexOf('share') > -1) {
-      menu.push(      {
+      menu.push({
         name: 'Share',
         value: 0,
         event: TOGGLE_SPEED_MENU,
@@ -374,7 +440,7 @@ class SettingMenuMain extends Component {
     }
 
     if (requiredMenu.indexOf('zoom') > -1) {
-      menu.push(      {
+      menu.push({
         name: 'Zoom',
         class: 'vjs-icon-spinner',
         value: 0,
@@ -385,7 +451,7 @@ class SettingMenuMain extends Component {
     }
 
     if (requiredMenu.indexOf('related') > -1) {
-      menu.push(      {
+      menu.push({
         name: 'Related',
         class: 'vjs-icon-chapters',
         value: 0,
@@ -395,9 +461,9 @@ class SettingMenuMain extends Component {
       })
     }
 
-    if (requiredMenu.indexOf('aspect-ration') > -1) {
+    if (requiredMenu.indexOf('aspect-ratio') > -1 && this.options_['aspectRatio'] && this.options_['aspectRatio'].length) {
       menu.push({
-        name: 'Ration',
+        name: 'Ratio',
         class: '',
         value: '16:9',
         event: TOGGLE_RATIO_MENU,
@@ -406,7 +472,7 @@ class SettingMenuMain extends Component {
       })
     }
 
-    if (requiredMenu.indexOf('speed') > -1) {
+    if (requiredMenu.indexOf('speed') > -1 && this.options_['speed'] && this.options_['speed'].length) {
       menu.push({
         name: 'Speed',
         class: '',
@@ -417,7 +483,7 @@ class SettingMenuMain extends Component {
       })
     }
 
-    if (requiredMenu.indexOf('quality') > -1) {
+    if (requiredMenu.indexOf('quality') > -1 && this.options_['sources'] && this.options_['sources'].length) {
       menu.push({
         name: 'Quality',
         class: '',

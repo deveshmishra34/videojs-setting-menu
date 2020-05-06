@@ -40,7 +40,7 @@ class SettingMenu extends Plugin {
       this.player.addClass('vjs-setting-menu');
 
       this.player.controlBar.settingButton = this.player.controlBar.addChild('settingButton');
-      this.player.controlBar.el().insertBefore(this.player.controlBar.settingButton.el(), this.player.controlBar.el().lastChild.nextSibling);
+      this.player.controlBar.el().insertBefore(this.player.controlBar.settingButton.el(), this.player.controlBar.fullscreenToggle.el());
 
       this.player.controlBar.settingButton = this.player.controlBar.addChild('settingMenuMain');
     });

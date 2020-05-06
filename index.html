@@ -7,64 +7,162 @@
   <link href="dist/videojs-setting-menu.css" rel="stylesheet">
 </head>
 <body>
-  <video id="videojs-setting-menu-player" class="video-js vjs-default-skin" controls>
-  </video>
-  <ul>
-    <li><a href="/test/debug.html">Run unit tests in browser.</a></li>
-    
-  </ul>
-  <script src="node_modules/video.js/dist/video.js"></script>
-  <script src="node_modules/@videojs/http-streaming/dist/videojs-http-streaming.min.js"></script>
-  <script src="dist/videojs-setting-menu.js"></script>
-  <script>
-    (function(window, videojs) {
-      var examplePlayer = window.examplePlayer = videojs('videojs-setting-menu-player', {
-        playbackRates: [0.5, 1, 1.25, 1.5, 2],
-        controlBar: {
-          children: {
-            playToggle: {},
-            currentTimeDisplay: {},
-            progressControl: {},
-            durationDisplay: {},
-            liveDisplay: {},
-            // settingButton: {},
-            // settingMenuMain: {},
-            fullscreenToggle: {}
+<video id="videojs-setting-menu-player" class="video-js vjs-default-skin" controls>
+</video>
+<ul>
+  <li><a href="/test/debug.html">Run unit tests in browser.</a></li>
+</ul>
+<script src="node_modules/video.js/dist/video.js"></script>
+<script src="dist/videojs-setting-menu.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/videojs-contrib-eme@3.7.0/dist/videojs-contrib-eme.js"></script>
+<script>
+  (function (window, videojs) {
+    var examplePlayer = window.examplePlayer = videojs('videojs-setting-menu-player', {
+      playbackRates: [0.5, 1, 1.25, 1.5, 2],
+      fluid: true,
+      plugins: {
+        eme: {}
+      },
+      controlBar: {
+        children: {
+          playToggle: {},
+          currentTimeDisplay: {},
+          progressControl: {},
+          durationDisplay: {},
+          liveDisplay: {},
+          // settingButton: {},
+          // settingMenuMain: {},
+          fullscreenToggle: {}
+        },
+      }
+    });
+
+    sourcesmp4 = [
+      {
+        src: 'https://player.vimeo.com/external/388011956.sd.mp4?s=5eecbb23995a7eff553f49843e3dc131d2074212&profile_id=165&oauth2_token_id=1289522162',
+        type: 'video/mp4',
+        label: '540'
+      },
+      {
+        src: 'https://player.vimeo.com/external/388011956.sd.mp4?s=5eecbb23995a7eff553f49843e3dc131d2074212&profile_id=139&oauth2_token_id=1289522162',
+        type: 'video/mp4',
+        label: '240'
+      },
+      {
+        src: 'https://player.vimeo.com/external/388011956.sd.mp4?s=5eecbb23995a7eff553f49843e3dc131d2074212&profile_id=164&oauth2_token_id=1289522162',
+        type: 'video/mp4',
+        label: '360'
+      }
+    ];
+
+    sources = [
+      {
+        src: 'https://player.vimeo.com/external/387243170.m3u8?s=5d29eaaa77b4e3a1fcf6b1edaaee22cb5d75b825',
+        type: 'application/x-mpegURL',
+        withCredentials: false
+      }
+    ];
+
+    const sourcesDash = [{
+      src: 'https://bitmovin-a.akamaihd.net/content/MI201109210084_1/mpds/f08e80da-bf1d-4e3d-8899-f0f6155f6efa.mpd',
+      type: 'application/dash+xml'
+    }];
+
+    const KEY = 'a4631a153a443df9eed0593043db7519'
+    // const KEY = 'a0a1a2a3a4a5a6a7a8a9aaabacadaeaf'
+
+    // Convert Uint8Array into base64 using base64url alphabet, without padding.
+    let toBase64 = (u8arr) => {
+      return btoa(String.fromCharCode.apply(null, u8arr)).
+      replace(/\+/g, '-').replace(/\//g, '_').replace(/=*$/, '');
+    }
+
+    // Hex to Base64
+    function hexToBase64(str) {
+      return btoa(String.fromCharCode.apply(null,
+        str.replace(/\r|\n/g, "").replace(/([\da-fA-F]{2}) ?/g, "0x$1 ").replace(/ +$/, "").split(" "))
+      ).replace(/\+/g, '-').replace(/\//g, '_').replace(/=*$/, '');
+    }
+
+    // Base64 to Hex
+    function base64ToHex(str) {
+      for (var i = 0, bin = atob(str.replace(/[ \r\n]+$/, "")), hex = []; i < bin.length; ++i) {
+        let tmp = bin.charCodeAt(i).toString(16);
+        if (tmp.length === 1) tmp = "0" + tmp;
+        hex[hex.length] = tmp;
+      }
+      return hex.join("");
+    }
+
+    const encDash = [{
+      src: 'https://penpencil-vdo.sgp1.cdn.digitaloceanspaces.com/shaka_encrypted_sample/shaka_encrypted_sample/h264_master.mpd',
+      type: 'application/dash+xml',
+      // src: 'https://penpencil-vdo.sgp1.digitaloceanspaces.com/video/sample/stream.mpd',
+      // src: 'https://penpencil-vdo.sgp1.cdn.digitaloceanspaces.com/video/sample/stream.mpd',
+      // src: 'https://penpencil-vdo.sgp1.digitaloceanspaces.com/video/sample_encrypted/stream.mpd',
+      // src: 'https://penpencil-vdo.sgp1.cdn.digitaloceanspaces.com/video/sample_encrypted/stream.mpd',
+      // type: 'application/x-mpegurl',
+      // type: 'application/dash+xml',
+      keySystems: {
+        'org.w3.clearkey': {
+          videoContentType: 'video/mp4;codecs="avc1.42c01e"',
+          audioContentType:  'audio/mp4;codecs="mp4a.40.2"',
+          getLicense: (emeOptions, keyMessage, callback) => {
+            console.log('emeOptions: ', emeOptions)
+            console.log('keyMessage: ', keyMessage)
+            // Parse the clearkey license request.
+            let request = JSON.parse(new TextDecoder().decode(keyMessage));
+            // We only know one key, so there should only be one key ID.
+            // A real license server could easily serve multiple keys.
+            console.log('request', request)
+            console.assert(request.kids.length === 1);
+
+            let keyObj = {
+              kty: 'oct',
+              kid: request.kids[0],
+              k: hexToBase64(KEY)
+            };
+
+            console.log('key_id:', base64ToHex(request.kids[0]))
+            console.log('Key object:', keyObj);
+
+            callback(null, new TextEncoder().encode(JSON.stringify({
+              keys: [keyObj]
+            })));
           }
         }
-      });
+      }
+    }];
 
-      // sources = [
-      //   {
-      //     src: 'https://player.vimeo.com/external/388011956.sd.mp4?s=5eecbb23995a7eff553f49843e3dc131d2074212&profile_id=165&oauth2_token_id=1289522162',
-      //     type: 'video/mp4',
-      //     label: '540'
-      //   },
-      //   {
-      //     src: 'https://player.vimeo.com/external/388011956.sd.mp4?s=5eecbb23995a7eff553f49843e3dc131d2074212&profile_id=139&oauth2_token_id=1289522162',
-      //     type: 'video/mp4',
-      //     label: '240'
-      //   },
-      //   {
-      //     src: 'https://player.vimeo.com/external/388011956.sd.mp4?s=5eecbb23995a7eff553f49843e3dc131d2074212&profile_id=164&oauth2_token_id=1289522162',
-      //     type: 'video/mp4',
-      //     label: '360'
-      //   }
-      // ];
+    examplePlayer.src(sources);
 
-      sources = [
-        {
-          src: 'https://player.vimeo.com/external/388011956.m3u8?s=a0111243ef5ba67050c4dd4c9faee216593978a9&oauth2_token_id=1289522162',
-          type: 'application/x-mpegURL',
-          withCredentials: false
-        }
-      ];
-      examplePlayer.src(sources);
-      var settingMenu = window.settingMenu = examplePlayer.settingMenu({
-        menu: ['speed', 'quality'], //speed, quality
 
-      });
-    }(window, window.videojs));
-  </script>
+    // setTimeout(() => {
+    //   console.log('hey');
+    //   examplePlayer.src([{
+    //     src: 'https://bitmovin-a.akamaihd.net/content/MI201109210084_1/mpds/f08e80da-bf1d-4e3d-8899-f0f6155f6efa.mpd',
+    //     type: 'application/dash+xml'
+    //   }]);
+    //
+    // }, 40000);
+
+    // setTimeout(() => {
+    //   console.log('hey');
+    //   examplePlayer.src(sourcesmp4);
+    //
+    // }, 40000);
+
+    // setTimeout(() => {
+    //   console.log('hey');
+    //   examplePlayer.src(sources);
+    //
+    // }, 20000);
+
+    var settingMenu = window.settingMenu = examplePlayer.settingMenu({
+      menu: ['speed', 'quality'], //speed, quality
+
+    });
+  }(window, window.videojs));
+</script>
 </body>
 </html>
