@@ -250,7 +250,7 @@ class SettingMenuMain extends Component {
   getQualityList() {
     let currentSource = this.player().currentSource();
     const tech = this.player().tech().hls;
-    if (currentSource && (currentSource.type === 'application/x-mpegURL' || currentSource.type === 'application/dash+xml') && tech) {
+    if (currentSource && (currentSource.type === 'application/x-mpegURL' || currentSource.type === 'application/dash+xml') && tech && tech.playlists && tech.playlists.master) {
       const masterDetails = tech.playlists.master;
       const representations = masterDetails.playlists;
       if (this.options_['sources'] && (currentSource.src === representations[0].resolvedUri || representations[0].resolvedUri.includes(currentSource.src))) {
