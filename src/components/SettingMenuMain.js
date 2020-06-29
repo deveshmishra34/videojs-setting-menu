@@ -29,7 +29,7 @@ class SettingMenuMain extends Component {
     super(player, options);
 
     this.options = videojs.mergeOptions(defaults, options);
-    // console.log('options: ', this.options, this.options_);
+    // console.log('options: ', options);
     // when player is ready setup basic option
     this.el()['classList'].add('vjs-hidden');
     player.on('ready', () => {
@@ -113,10 +113,10 @@ class SettingMenuMain extends Component {
 
     // Go back to main menu, hide everything accept main menu
     player.on(GO_TO_MAIN_MENU, () => {
-    //   document.getElementsByClassName('vjs-settings-menu-home')[0].classList.remove('vjs-hidden');
-    //   document.getElementsByClassName('vjs-settings-menu-speed')[0].classList.add('vjs-hidden');
-    //   document.getElementsByClassName('vjs-settings-menu-quality')[0].classList.add('vjs-hidden');
-    //   document.getElementsByClassName('vjs-settings-menu-ratio')[0].classList.add('vjs-hidden');
+      //   document.getElementsByClassName('vjs-settings-menu-home')[0].classList.remove('vjs-hidden');
+      //   document.getElementsByClassName('vjs-settings-menu-speed')[0].classList.add('vjs-hidden');
+      //   document.getElementsByClassName('vjs-settings-menu-quality')[0].classList.add('vjs-hidden');
+      //   document.getElementsByClassName('vjs-settings-menu-ratio')[0].classList.add('vjs-hidden');
 
       this.eleClassAction(document.getElementsByClassName('vjs-settings-menu-home'), 'vjs-hidden', 'remove');
       this.eleClassAction(document.getElementsByClassName('vjs-settings-menu-speed'), 'vjs-hidden');
@@ -125,23 +125,60 @@ class SettingMenuMain extends Component {
     });
 
     // on playbackRate change
-    player.on(CHANGE_PLAYBACK_RATE, (data, item) => {
+    player.on(CHANGE_PLAYBACK_RATE, (_, data) => {
+      const item = data.item;
+      const element = data.element;
+
       this.player().playbackRate(item ? item : 1);
+
+      // update outer value
+      document.getElementsByClassName('vjs-setting-speed')[0].innerHTML = (item === 1) ? 'Normal' : item + 'x';
+
+      // update radio button
+      document.getElementsByClassName('vjs-speed vjs-icon-circle-inner-circle')[0].classList.add('vjs-icon-circle-outline');
+      document.getElementsByClassName('vjs-speed vjs-icon-circle-inner-circle')[0].classList.remove('vjs-icon-circle-inner-circle');
+      if (element.target && element.target.children.length > 1) {
+        element.target.children[1].classList.add('vjs-icon-circle-inner-circle');
+        element.target.children[1].classList.remove('vjs-icon-circle-outline');
+      } else {
+        element.currentTarget.children[1].classList.add('vjs-icon-circle-inner-circle');
+        element.currentTarget.children[1].classList.remove('vjs-icon-circle-outline');
+      }
     });
 
     // on playbackRate change
-    player.on(CHANGE_ASPECT_RATIO, (data, item) => {
+    player.on(CHANGE_ASPECT_RATIO, (_, data) => {
+
+      const item = data.item;
+      const element = data.element;
+
       // console.log(CHANGE_ASPECT_RATIO, item);
       this.player().aspectRatio(item ? item : '16:9');
+      // update outer value
+      document.getElementsByClassName('vjs-setting-ratio')[0].innerHTML = item;
+
+      // update radio button
+      document.getElementsByClassName('vjs-ratio vjs-icon-circle-inner-circle')[0].classList.add('vjs-icon-circle-outline');
+      document.getElementsByClassName('vjs-ratio vjs-icon-circle-inner-circle')[0].classList.remove('vjs-icon-circle-inner-circle');
+      if (element.target && element.target.children.length > 1) {
+        element.target.children[1].classList.add('vjs-icon-circle-inner-circle');
+        element.target.children[1].classList.remove('vjs-icon-circle-outline');
+      } else {
+        element.currentTarget.children[1].classList.add('vjs-icon-circle-inner-circle');
+        element.currentTarget.children[1].classList.remove('vjs-icon-circle-outline');
+      }
     });
 
     // on player quality change
-    player.on(CHANGE_PLAYER_QUALITY, (data, item) => {
+    player.on(CHANGE_PLAYER_QUALITY, (_, data) => {
+      const item = data.item;
+      const element = data.element;
       const tech = this.player().tech().hls;
+
       if (item && (item.type === 'application/x-mpegURL' || item.type === 'application/dash+xml') && tech) {
         const masterDetails = tech.playlists.master;
         const representations = masterDetails.playlists;
-        const playLists = representations.filter( (playlistInfo) => {
+        const playLists = representations.filter((playlistInfo) => {
           if (playlistInfo && playlistInfo.resolvedUri === item.src) {
             return playlistInfo;
           }
@@ -162,6 +199,23 @@ class SettingMenuMain extends Component {
           }
           this.player().currentTime(currentTime);
         });
+      }
+
+
+      // console.log(CHANGE_PLAYER_QUALITY, data, item);
+      // update outer value
+      document.getElementsByClassName('vjs-setting-quality')[0].innerHTML = item.label === 'Auto' ? 'Auto': item.label + 'p';
+
+      // update radio button
+      document.getElementsByClassName('vjs-quality vjs-icon-circle-inner-circle')[0].classList.add('vjs-icon-circle-outline');
+      document.getElementsByClassName('vjs-quality vjs-icon-circle-inner-circle')[0].classList.remove('vjs-icon-circle-inner-circle');
+
+      if (element.target && element.target.children.length > 1) {
+        element.target.children[1].classList.add('vjs-icon-circle-inner-circle');
+        element.target.children[1].classList.remove('vjs-icon-circle-outline');
+      } else {
+        element.currentTarget.children[1].classList.add('vjs-icon-circle-inner-circle');
+        element.currentTarget.children[1].classList.remove('vjs-icon-circle-outline');
       }
     });
   }
@@ -249,26 +303,48 @@ class SettingMenuMain extends Component {
 
   getQualityList() {
     let currentSource = this.player().currentSource();
+    // this.player()['hls']
     const tech = this.player().tech().hls;
+    let defaultQuality = this.options_['defaultQuality'];
+
+    if (defaultQuality && defaultQuality.includes('p')) {
+      defaultQuality = defaultQuality.replace('p', '');
+    }
+
+    // console.log('tech: ', tech);
     if (currentSource && (currentSource.type === 'application/x-mpegURL' || currentSource.type === 'application/dash+xml') && tech && tech.playlists && tech.playlists.master) {
       const masterDetails = tech.playlists.master;
+      // console.log('masterDetails: ', masterDetails);
       const representations = masterDetails.playlists;
       if (this.options_['sources'] && (currentSource.src === representations[0].resolvedUri || representations[0].resolvedUri.includes(currentSource.src))) {
         return;
       }
 
       const sources = {};
-      representations.forEach( (el) => {
+      representations.forEach((el) => {
         const height = el.attributes && el.attributes.RESOLUTION && el.attributes.RESOLUTION.height ? el.attributes.RESOLUTION.height.toString() : '240';
         if (!sources.hasOwnProperty(height)) {
           sources[height] = {
-            src: (el.resolvedUri && (el.resolvedUri.split(':')[0].length === 5 || el.id.split(':')[0].length === 4)) ? el.resolvedUri : el.resolvedUri.substr(2, el.resolvedUri.length - 1), //: currentSources.src
+            src: (el.resolvedUri && (el.resolvedUri.split(':')[0].length === 5 || el.resolvedUri.split(':')[0].length === 4)) ? el.resolvedUri : el.resolvedUri.substr(2, el.resolvedUri.length - 1), //: currentSources.src
             label: el.attributes && el.attributes.RESOLUTION && el.attributes.RESOLUTION.height ? el.attributes.RESOLUTION.height.toString() : '240',
             type: currentSource.type
           }
         }
+
+        if (defaultQuality && defaultQuality === height) {
+          tech.playlists.media(el);
+          tech.selectPlaylist = function () {
+            return el;
+          }
+        }
+
       });
-      this.options_['sources'] = Object.values(sources);
+      // In lower end browsers Object.values will not work;
+      // this.options_['sources'] = Object.values(sources);
+      // this.options_['sources'] = [sources[144]];
+      this.options_['sources'] = Object.keys(sources).map(function(e) {
+        return sources[e];
+      });
 
       this.options_['sources'].push({
         src: currentSource.src,
@@ -276,14 +352,14 @@ class SettingMenuMain extends Component {
         type: currentSource.type
       });
 
-      this.options_['defaultQuality'] = 'Auto';
+      this.options_['defaultQuality'] = defaultQuality || 'Auto';
       // console.log(this.options_['sources']);
     } else if (currentSource && currentSource.type === 'video/mp4') {
       // console.log('here');
       const currentSources = this.player().currentSources();
       const sources = [];
-      const filterSources = this.options_['sources'] ? this.options_['sources'].filter( (el) => el.src === currentSources[0].src) : [];
-      if (this.options_['sources'] && currentSource.src === currentSources[0].src && filterSources.length &&filterSources[0].src === currentSource.src) {
+      const filterSources = this.options_['sources'] ? this.options_['sources'].filter((el) => el.src === currentSources[0].src) : [];
+      if (this.options_['sources'] && currentSource.src === currentSources[0].src && filterSources.length && filterSources[0].src === currentSource.src) {
         return;
       }
 
@@ -294,6 +370,15 @@ class SettingMenuMain extends Component {
             label: el.label,
             type: el.type
           })
+        }
+
+        if (defaultQuality && defaultQuality === el.label) {
+          currentSource = {
+            src: el.src,
+            label: el.label,
+            type: el.type
+          };
+          this.player().src(currentSource);
         }
       });
       // console.log('sources: ', sources, this.player().currentSources());
@@ -332,19 +417,21 @@ class SettingMenuMain extends Component {
     const sources = this.options_['sources'] || [];
 
     // console.log('sources: ', sources, 'currentSrc: ', currentSource, this.options_, this.player_.getCache());
-    const speedOptions = sources.map(el => {
-      return {
-        name: (el.label === 'Auto') ? 'Auto' : el.label + 'p',
-        value: el,
-        isSelected: (el.label === currentSource['src'] || el.label === 'Auto'),
-        className: (el.label === currentSource['label'] || el.label === 'Auto') ? 'vjs-icon-circle-inner-circle' : 'vjs-icon-circle-outline',
-        event: CHANGE_PLAYER_QUALITY,
-        innerHTML: `<span class="vjs-setting-title">${(el.label === 'Auto') ? 'Auto' : el.label + 'p'}</span>
-<span class="vjs-setting-icon vjs-quality ${(el.label === currentSource['label'] || el.label === 'Auto') ? 'vjs-icon-circle-inner-circle' : 'vjs-icon-circle-outline'}"></span>`
-      };
-    });
+    const qualityOptions = sources.map(el => {
+      // console.log(el.label, currentSource['label'], this.options_['defaultQuality'], (el.label === currentSource['label'] || el.label === this.options_['defaultQuality']));
+        return {
+          name: (el.label === 'Auto') ? 'Auto' : el.label + 'p',
+          value: el,
+          isSelected: (el.label === currentSource['label'] || el.label === this.options_['defaultQuality']),
+          className: (el.label === currentSource['label'] || el.label === this.options_['defaultQuality']) ? 'vjs-icon-circle-inner-circle' : 'vjs-icon-circle-outline',
+          event: CHANGE_PLAYER_QUALITY,
+          innerHTML: `<span class="vjs-setting-title">${(el.label === 'Auto') ? 'Auto' : el.label + 'p'}</span>
+<span class="vjs-setting-icon vjs-quality ${(el.label === currentSource['label'] || el.label === this.options_['defaultQuality']) ? 'vjs-icon-circle-inner-circle' : 'vjs-icon-circle-outline'}"></span>`
+        };
+      });
 
-    speedOptions.splice(0, 0, {
+
+    qualityOptions.splice(0, 0, {
       name: 'Quality',
       value: 'Quality',
       isSelected: false,
@@ -354,7 +441,7 @@ class SettingMenuMain extends Component {
                     <span class="vjs-setting-title">Quality</span>`
     });
 
-    return speedOptions;
+    return qualityOptions;
   }
 
   getSpeedMenu() {
@@ -483,7 +570,8 @@ class SettingMenuMain extends Component {
       })
     }
 
-    if (requiredMenu.indexOf('quality') > -1 && this.options_['sources'] && this.options_['sources'].length) {
+    // show quality menu only when there is more than two quality (including auto)
+    if (requiredMenu.indexOf('quality') > -1 && this.options_['sources'] && this.options_['sources'].length > 2) {
       menu.push({
         name: 'Quality',
         class: '',

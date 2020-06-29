@@ -13,11 +13,22 @@
   <li><a href="/test/debug.html">Run unit tests in browser.</a></li>
 </ul>
 <script src="node_modules/video.js/dist/video.js"></script>
+<!--<script src="node_modules/@videojs/http-streaming/dist/videojs-http-streaming.min.js"></script>-->
+<script src="node_modules/video.js/dist/video.js"></script>
 <script src="dist/videojs-setting-menu.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/videojs-contrib-eme@3.7.0/dist/videojs-contrib-eme.js"></script>
 <script>
   (function (window, videojs) {
     var examplePlayer = window.examplePlayer = videojs('videojs-setting-menu-player', {
+      html5: {
+        hls: {
+          overrideNative: true,
+          enableLowInitialPlaylist: false
+        },
+        nativeVideoTracks: false,
+        nativeAudioTracks: false,
+        nativeTextTracks: false
+      },
       playbackRates: [0.5, 1, 1.25, 1.5, 2],
       fluid: true,
       plugins: {
@@ -68,7 +79,7 @@
       type: 'application/dash+xml'
     }];
 
-    const KEY = 'a4631a153a443df9eed0593043db7519'
+    const KEY = '06ca4d2cf39b2008faf65093d452c6a0';
     // const KEY = 'a0a1a2a3a4a5a6a7a8a9aaabacadaeaf'
 
     // Convert Uint8Array into base64 using base64url alphabet, without padding.
@@ -86,16 +97,17 @@
 
     // Base64 to Hex
     function base64ToHex(str) {
-      for (var i = 0, bin = atob(str.replace(/[ \r\n]+$/, "")), hex = []; i < bin.length; ++i) {
+      str = str.replace(/\-/g, '+').replace(/\_/g, '/');
+      for (var i = 0, bin = atob(str.replace(/[ \r\n]+$/, '')), hex = []; i < bin.length; ++i) {
         let tmp = bin.charCodeAt(i).toString(16);
-        if (tmp.length === 1) tmp = "0" + tmp;
+        if (tmp.length === 1) tmp = '0' + tmp;
         hex[hex.length] = tmp;
       }
-      return hex.join("");
+      return hex.join('');
     }
 
     const encDash = [{
-      src: 'https://penpencil-vdo.sgp1.cdn.digitaloceanspaces.com/shaka_encrypted_sample/shaka_encrypted_sample/h264_master.mpd',
+      src: 'https://penpencil-vdo.sgp1.cdn.digitaloceanspaces.com/38211443-5fff-4e1f-9f78-0c71bacbdc3a/master.mpd',
       type: 'application/dash+xml',
       // src: 'https://penpencil-vdo.sgp1.digitaloceanspaces.com/video/sample/stream.mpd',
       // src: 'https://penpencil-vdo.sgp1.cdn.digitaloceanspaces.com/video/sample/stream.mpd',
@@ -108,14 +120,14 @@
           videoContentType: 'video/mp4;codecs="avc1.42c01e"',
           audioContentType:  'audio/mp4;codecs="mp4a.40.2"',
           getLicense: (emeOptions, keyMessage, callback) => {
-            console.log('emeOptions: ', emeOptions)
-            console.log('keyMessage: ', keyMessage)
+            // console.log('emeOptions: ', emeOptions)
+            // console.log('keyMessage: ', keyMessage)
             // Parse the clearkey license request.
             let request = JSON.parse(new TextDecoder().decode(keyMessage));
             // We only know one key, so there should only be one key ID.
             // A real license server could easily serve multiple keys.
-            console.log('request', request)
-            console.assert(request.kids.length === 1);
+            // console.log('request', request)
+            // console.assert(request.kids.length === 1);
 
             let keyObj = {
               kty: 'oct',
@@ -123,8 +135,8 @@
               k: hexToBase64(KEY)
             };
 
-            console.log('key_id:', base64ToHex(request.kids[0]))
-            console.log('Key object:', keyObj);
+            // console.log('key_id:', base64ToHex(request.kids[0]))
+            // console.log('Key object:', keyObj);
 
             callback(null, new TextEncoder().encode(JSON.stringify({
               keys: [keyObj]
@@ -134,7 +146,7 @@
       }
     }];
 
-    examplePlayer.src(sources);
+    examplePlayer.src(sourcesmp4);
 
 
     // setTimeout(() => {
@@ -158,9 +170,10 @@
     //
     // }, 20000);
 
+    // console.log('examplePlayer: ', examplePlayer);
     var settingMenu = window.settingMenu = examplePlayer.settingMenu({
       menu: ['speed', 'quality'], //speed, quality
-
+      defaultQuality: "240"
     });
   }(window, window.videojs));
 </script>

@@ -1,6 +1,6 @@
 {
   "name": "videojs-setting-menu",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Adding a setting menu in videojs control bar",
   "main": "dist/videojs-setting-menu.cjs.js",
   "module": "dist/videojs-setting-menu.es.js",
